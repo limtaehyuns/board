@@ -41,11 +41,25 @@ export class Repository<T> extends DbService<T> {
     console.log(where);
     const queryResult = (await this.readFile(this.entity)).filter((item) => {
       for (const key in where) {
-        if (where[key]['$eq'] && where[key]['$eq'] !== undefined) {
-          if (item[key] !== where[key]['$eq']) return false;
-        } else if (where[key]['$in'] && where[key]['$in'] !== undefined) {
-          if (!where[key]['$in'].includes(item[key])) return false;
-        } else if (item[key] !== where[key]) return false;
+        if (where[key] instanceof Object) {
+          const operator = Object.keys(where[key])[0];
+          const value = where[key][operator];
+          if (value === undefined) return true;
+
+          switch (operator) {
+            case '$eq':
+              if (item[key] !== value) return false;
+              break;
+            case '$in':
+              if (!value.includes(item[key])) return false;
+              break;
+            case '$like':
+              if (!item[key].includes(value)) return false;
+              break;
+            default:
+              break;
+          }
+        }
       }
 
       return true;

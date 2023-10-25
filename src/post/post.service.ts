@@ -143,13 +143,13 @@ export class PostService {
           }
         : undefined,
       content: {
-        $in:
+        $like:
           type === SearchType.TITLE_AND_CONTENT || SearchType.CONTENT
             ? query
             : undefined,
       },
       title: {
-        $in:
+        $like:
           type === SearchType.TITLE_AND_CONTENT || SearchType.TITLE
             ? query
             : undefined,
