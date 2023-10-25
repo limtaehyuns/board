@@ -5,13 +5,18 @@ import { DbService } from 'src/db/db.service';
 import { BoardService } from 'src/board/board.service';
 import { RateService } from 'src/rate/rate.service';
 import { CommentService } from 'src/comment/comment.service';
+import { BoardRepository } from 'src/board/entities/board.repository';
+import { RateModule } from 'src/rate/rate.module';
+import { CommentModule } from 'src/comment/comment.module';
 
 @Module({
+  imports: [RateModule, CommentModule],
   controllers: [PostController],
   providers: [
     PostService,
     DbService,
     BoardService,
+    BoardRepository,
     RateService,
     CommentService,
   ],

@@ -6,9 +6,17 @@ import { BoardModule } from './board/board.module';
 import { PostModule } from './post/post.module';
 import { RateLimiterGuard, RateLimiterModule } from 'nestjs-rate-limiter';
 import { APP_GUARD } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
-  imports: [RateLimiterModule, DbModule, BoardModule, BoardModule, PostModule],
+  imports: [
+    RateLimiterModule,
+    CacheModule.register({ isGlobal: true }),
+    DbModule,
+    BoardModule,
+    BoardModule,
+    PostModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
