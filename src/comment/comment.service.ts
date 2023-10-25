@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { Comment } from './entities/comment.entity';
-import { RateService } from 'src/rate/rate.service';
 import { CommentRepository } from './entities/comment.repository';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { Pagination } from 'src/interface/Pagination';
 
 @Injectable()
 export class CommentService {
-  constructor(
-    private readonly commentRepository: CommentRepository,
-    private readonly rateService: RateService,
-  ) {}
+  constructor(private readonly commentRepository: CommentRepository) {}
 
   // private createCommentTree = (comments: any[]) => {
   //   const tree = [];
@@ -48,13 +44,16 @@ export class CommentService {
     return await this.commentRepository.insert(data);
   }
 
-  async findAll(postId: number) {
-    const comments = await this.commentRepository.where('comments', { postId });
-    const processedComments = await this.createRelations(comments);
-    return await this.createCommentTree(processedComments);
+  async findAll(postId: number, pagination: Pagination) {
+    return await this.commentRepository.commentFindAll(postId, pagination);
   }
 
-  async update(commentId: number, content: string) {}
+  async update(commentId: number, content: string) {
+    const comment = await this.commentRepository.findOne({ id: commentId });
+    if (!comment) return null;
+
+    this.commentRepository.update({ content, ...comment }, comment);
+  }
 
   async remove(commentId: number) {
     return await this.commentRepository.delete({ id: commentId });

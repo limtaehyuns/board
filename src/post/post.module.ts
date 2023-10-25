@@ -8,6 +8,7 @@ import { CommentService } from 'src/comment/comment.service';
 import { BoardRepository } from 'src/board/entities/board.repository';
 import { RateModule } from 'src/rate/rate.module';
 import { CommentModule } from 'src/comment/comment.module';
+import { PostRepository } from './entities/post.repository';
 
 @Module({
   imports: [RateModule, CommentModule],
@@ -18,6 +19,7 @@ import { CommentModule } from 'src/comment/comment.module';
     BoardService,
     BoardRepository,
     RateService,
+    PostRepository,
     CommentService,
   ],
 })

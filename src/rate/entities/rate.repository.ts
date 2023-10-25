@@ -4,7 +4,7 @@ import { Rate } from './rate.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { CreateRateDto, RateType } from '../dto/create-rate.dto';
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 interface RateQueue extends CreateRateDto {
   createdAt: Date;

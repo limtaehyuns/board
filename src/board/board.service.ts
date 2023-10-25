@@ -46,6 +46,12 @@ export class BoardService {
     return boards;
   }
 
+  async findAllWithoutPagination() {
+    const boards = await this.boardRepository.where({});
+
+    return boards;
+  }
+
   async findOne(param: FindOneBoardDto) {
     const board = await this.boardRepository.findOne(
       { id: { $eq: param.id } },

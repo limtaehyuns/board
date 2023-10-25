@@ -29,11 +29,8 @@ export class PostController {
   }
 
   @Get()
-  findAll(@Query('limit') limit: number, @Query('offset') offset: number) {
-    return this.postService.findAll(
-      Number.isNaN(limit) ? 20 : limit,
-      Number.isNaN(offset) ? 0 : offset,
-    );
+  findAll(@Query('limit') limit: number, @Query('page') page: number) {
+    return this.postService.findAll({ limit, page });
   }
 
   @Get('search')
@@ -41,29 +38,25 @@ export class PostController {
     @Query('query') query: string,
     @Query('type') type: SearchType,
     @Query('limit') limit: number,
-    @Query('offset') offset: number,
+    @Query('page') page: number,
+    @Query('slug') slug?: string,
   ) {
-    return this.postService.searchByQuery(
-      Number.isNaN(limit) ? 20 : limit,
-      Number.isNaN(offset) ? 0 : offset,
-      type,
-      query,
-    );
+    return this.postService.searchByQuery({ limit, page }, type, query, slug);
   }
 
   @Get(':id')
   findOne(@Param('id') id: number) {
-    return this.postService.findOne(+id);
+    return this.postService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(+id, updatePostDto);
+    return this.postService.update(id, updatePostDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: number) {
-    return this.postService.remove(+id);
+    return this.postService.remove(id);
   }
 
   @RateLimit({
@@ -80,10 +73,14 @@ export class PostController {
   }
 
   @Get(':id/comments')
-  async getComments(@Param('id') id: number) {
+  async getComments(
+    @Param('id') id: number,
+    @Query('limit') limit: number,
+    @Query('page') page: number,
+  ) {
     await this.postService.isPostExist(id);
 
-    return this.commentService.findAll(id);
+    return this.commentService.findAll(id, { limit, page });
   }
 
   @Post(':id/comments')
@@ -94,7 +91,12 @@ export class PostController {
   ) {
     await this.postService.isPostExist(id);
 
-    return this.commentService.create(id, content, parentId);
+    return this.commentService.create({
+      postId: id,
+      content,
+      parentId,
+      userId: 1,
+    });
   }
 
   @Patch(':id/comments/:commentId')
