@@ -1,15 +1,24 @@
 import { NotFoundException } from '@nestjs/common';
 import { DbService } from './db.service';
-import { Pagination } from 'src/interface/Pagination';
+import { Pagination, PaginationResult } from 'src/interface/Pagination';
+import { Where } from 'src/interface/Query';
 
 export class Repository<T> extends DbService<T> {
   constructor(private readonly entity: string) {
     super();
   }
 
-  private async pagination(items: T[], pagination: Pagination): Promise<T[]> {
+  public pagination(items: T[], pagination: Pagination): PaginationResult<T> {
     const { page, limit } = pagination;
-    return items.slice(page * limit, (page + 1) * limit);
+
+    return {
+      pagination: {
+        limit,
+        page: items.length / limit,
+        total: items.length,
+      },
+      data: items.slice((page - 1) * limit, page * limit),
+    };
   }
 
   public async lastId(): Promise<number> {
@@ -17,27 +26,32 @@ export class Repository<T> extends DbService<T> {
     return items.length ? items[items.length - 1]['id'] : 0;
   }
 
-  public async findAll(pagination: Pagination): Promise<T[]> {
-    return this.pagination(await this.readFile(this.entity), pagination);
+  public async findAll(pagination: Pagination): Promise<PaginationResult<T>> {
+    return this.pagination(await this.where({}), pagination);
   }
 
-  public async findOne(where: Partial<T>): Promise<T> {
-    const data = await this.where(where, { page: 0, limit: 1 });
+  public async findOne(where: Where<T>): Promise<T> {
+    const data = await this.where(where);
     if (data.length < 1) throw new NotFoundException('resource not found');
 
     return data[0];
   }
 
-  public async where(where: Partial<T>, pagination: Pagination): Promise<T[]> {
-    return this.pagination(
-      await this.readFile(this.entity).filter((item) => {
-        for (const key in where) {
+  public async where(where: Where<T>): Promise<T[]> {
+    const queryResult = (await this.readFile(this.entity)).filter((item) => {
+      for (const key in where) {
+        if (where[key]['$eq']) {
+          if (item[key] !== where[key]['$eq']) return false;
+        } else if (where[key]['$in']) {
+          if (!where[key]['$in'].includes(item[key])) return false;
+        } else {
           if (item[key] !== where[key]) return false;
         }
-        return true;
-      }),
-      pagination,
-    );
+      }
+      return true;
+    });
+
+    return queryResult;
   }
 
   public async insert(data: T): Promise<T> {

@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBoardDto } from './dto/create-board.dto';
 import { UpdateBoardDto } from './dto/update-board.dto';
 import { BoardRepository } from './entities/board.repository';
+import { Pagination } from 'src/interface/Pagination';
+import { FindOneBoardDto } from './dto/findone-board';
 
 @Injectable()
 export class BoardService {
@@ -13,38 +15,45 @@ export class BoardService {
     return insertResult;
   }
 
-  private createChildrenTree(boards: any[]) {
-    const itemMap = new Map();
-    const root = [];
+  // private createChildrenTree(boards: any[]) {
+  //   const itemMap = new Map();
+  //   const root = [];
 
-    for (const item of boards) {
-      item.children = [];
-      itemMap.set(item.id, item);
-    }
+  //   for (const item of boards) {
+  //     item.children = [];
+  //     itemMap.set(item.id, item);
+  //   }
 
-    for (const item of boards) {
-      if (item.parentId !== item.id) {
-        const parentItem = itemMap.get(item.parentId);
-        if (parentItem) {
-          parentItem.children.push(item);
-        } else {
-          root.push(item);
-        }
-      } else {
-        root.push(item);
-      }
-    }
+  //   for (const item of boards) {
+  //     if (item.parentId !== item.id) {
+  //       const parentItem = itemMap.get(item.parentId);
+  //       if (parentItem) {
+  //         parentItem.children.push(item);
+  //       } else {
+  //         root.push(item);
+  //       }
+  //     } else {
+  //       root.push(item);
+  //     }
+  //   }
 
-    return root;
+  //   return root;
+  // }
+
+  async findAll(pagination: Pagination) {
+    const boards = await this.boardRepository.findAll(pagination);
+
+    return boards;
   }
 
-  async findAll() {
-    const boards = await this.boardRepository.findAll();
-    return this.createChildrenTree(boards);
-  }
-
-  async findOne(id: number) {
-    const [board] = await this.boardRepository.where({ id });
+  async findOne(param: FindOneBoardDto) {
+    const board = await this.boardRepository.findOne(
+      { id: { $eq: param.id } },
+      {
+        load: param.children,
+        pagination: { page: param.page, limit: param.limit },
+      },
+    );
     if (!board) throw new NotFoundException('resource not found');
 
     return board;
