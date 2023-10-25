@@ -14,7 +14,7 @@ export class Repository<T> extends DbService<T> {
     return {
       pagination: {
         limit,
-        page: items.length / limit,
+        page: Math.ceil(items.length / limit),
         total: items.length,
       },
       data: items.slice((page - 1) * limit, page * limit),
@@ -38,7 +38,6 @@ export class Repository<T> extends DbService<T> {
   }
 
   public async where(where: Where<T>): Promise<T[]> {
-    console.log(where);
     const queryResult = (await this.readFile(this.entity)).filter((item) => {
       for (const key in where) {
         if (where[key] instanceof Object) {

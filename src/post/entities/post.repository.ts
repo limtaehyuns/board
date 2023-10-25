@@ -60,11 +60,9 @@ export class PostRepository extends Repository<Post> {
       }
     }
 
-    console.log(await this.boardService.findAllWithoutPagination());
     for (const node of this.createChildrenTree(
       await this.boardService.findAllWithoutPagination(),
     )) {
-      console.log(node);
       search(node, true);
     }
 
@@ -90,7 +88,7 @@ export class PostRepository extends Repository<Post> {
 
   async findOne(where: Where<Post>): Promise<any> {
     const post = await super.findOne(where);
-    console.log(post);
+    // console.log(post);
     return await this.createRelations([post]);
   }
 }

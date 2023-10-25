@@ -134,8 +134,6 @@ export class PostService {
       ? await this.postRepository.searchSlug(slug)
       : [];
 
-    console.log(targetSlugs);
-
     const condition = {
       boardId: targetSlugs.length
         ? {
@@ -155,8 +153,6 @@ export class PostService {
             : undefined,
       },
     };
-
-    console.log(condition);
 
     return this.postRepository.pagination(
       await this.postRepository.where(condition),

@@ -20,12 +20,14 @@ export class RateRepository extends Repository<Rate> {
     protected readonly cacheManager: Cache,
   ) {
     super('rates');
+    this.processQueue();
   }
 
   async processQueue() {
     while (true) {
       if (this.queue.length > 0) {
         const data = this.queue.shift();
+        console.log(data, 'processQueue');
         await this.create(data);
       } else {
         await this.waitEvents();
@@ -40,19 +42,23 @@ export class RateRepository extends Repository<Rate> {
   }
 
   async getRate(postId?: number, commentId?: number) {
-    const cachedValue = await this.cacheManager.get(
-      postId ? `post-${postId}` : `comment-${commentId}`,
-    );
-    if (cachedValue) return cachedValue;
+    const prefix = postId ? `post-${postId}` : `comment-${commentId}`;
+    const cachedValue = (await this.cacheManager.get(prefix)) as
+      | string
+      | undefined;
+
+    if (cachedValue) {
+      return JSON.parse(cachedValue);
+    }
 
     const db = await this.where({ postId, commentId });
     const like = db.filter((rate) => rate.rate === 1).length;
     const dislike = db.length - like;
 
     await this.cacheManager.set(
-      postId ? `post-${postId}` : `comment-${commentId}`,
+      prefix,
       JSON.stringify({ like, dislike }),
-      60 * 1,
+      1000 * 10,
     );
 
     return { like, dislike };
@@ -70,10 +76,9 @@ export class RateRepository extends Repository<Rate> {
 
     const [exist] = await this.where({ userId, postId, commentId });
     const prefix = postId ? 'post-' + postId : 'comment-' + commentId;
-    const cachedData = JSON.parse(await this.cacheManager.get(prefix)) as {
-      like: number;
-      dislike: number;
-    };
+    const cachedData = (await this.cacheManager.get(prefix))
+      ? JSON.parse((await this.cacheManager.get(prefix)) as string)
+      : { like: 0, dislike: 0 };
 
     if (exist && exist.rate === rate) {
       await super.delete({ postId, commentId, userId });
@@ -81,7 +86,11 @@ export class RateRepository extends Repository<Rate> {
       if (rate === RateType.LIKE) cachedData.like -= 1;
       else cachedData.dislike -= 1;
 
-      await this.cacheManager.set(prefix, JSON.stringify(cachedData), 60 * 1);
+      await this.cacheManager.set(
+        prefix,
+        JSON.stringify(cachedData),
+        1000 * 10,
+      );
       return;
     }
     if (exist && exist.rate !== rate) {
@@ -95,7 +104,11 @@ export class RateRepository extends Repository<Rate> {
         cachedData.dislike -= 1;
       }
 
-      await this.cacheManager.set(prefix, JSON.stringify(cachedData), 60 * 1);
+      await this.cacheManager.set(
+        prefix,
+        JSON.stringify(cachedData),
+        1000 * 10,
+      );
       return;
     }
 
@@ -110,7 +123,7 @@ export class RateRepository extends Repository<Rate> {
     if (rate === RateType.LIKE) cachedData.like += 1;
     else cachedData.dislike += 1;
 
-    await this.cacheManager.set(prefix, JSON.stringify(cachedData), 60 * 1);
+    await this.cacheManager.set(prefix, JSON.stringify(cachedData), 1000 * 10);
   }
 
   async update(data: Rate): Promise<void> {

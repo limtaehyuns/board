@@ -11,7 +11,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 @Module({
   imports: [
     RateLimiterModule,
-    CacheModule.register({ isGlobal: true }),
+    CacheModule.register({ isGlobal: true, store: 'memory' }),
     DbModule,
     BoardModule,
     BoardModule,
