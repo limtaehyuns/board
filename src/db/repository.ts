@@ -38,19 +38,20 @@ export class Repository<T> extends DbService<T> {
   }
 
   public async where(where: Where<T>): Promise<T[]> {
+    console.log(where);
     const queryResult = (await this.readFile(this.entity)).filter((item) => {
       for (const key in where) {
-        if (where[key]['$eq']) {
+        if (where[key]['$eq'] && where[key]['$eq'] !== undefined) {
           if (item[key] !== where[key]['$eq']) return false;
-        } else if (where[key]['$in']) {
+        } else if (where[key]['$in'] && where[key]['$in'] !== undefined) {
           if (!where[key]['$in'].includes(item[key])) return false;
-        } else {
-          if (item[key] !== where[key]) return false;
-        }
+        } else if (item[key] !== where[key]) return false;
       }
+
       return true;
     });
 
+    // console.log(queryResult);
     return queryResult;
   }
 

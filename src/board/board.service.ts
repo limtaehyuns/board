@@ -15,31 +15,6 @@ export class BoardService {
     return insertResult;
   }
 
-  // private createChildrenTree(boards: any[]) {
-  //   const itemMap = new Map();
-  //   const root = [];
-
-  //   for (const item of boards) {
-  //     item.children = [];
-  //     itemMap.set(item.id, item);
-  //   }
-
-  //   for (const item of boards) {
-  //     if (item.parentId !== item.id) {
-  //       const parentItem = itemMap.get(item.parentId);
-  //       if (parentItem) {
-  //         parentItem.children.push(item);
-  //       } else {
-  //         root.push(item);
-  //       }
-  //     } else {
-  //       root.push(item);
-  //     }
-  //   }
-
-  //   return root;
-  // }
-
   async findAll(pagination: Pagination) {
     const boards = await this.boardRepository.findAll(pagination);
 

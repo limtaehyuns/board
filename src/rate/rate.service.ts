@@ -10,7 +10,7 @@ export class RateService {
     this.rateRepository.insertQueue({ rate, postId, commentId });
   }
 
-  async getRate(postId?: number, commentId?: number) {
+  public async getRate(postId?: number, commentId?: number) {
     if (postId === undefined && commentId === undefined)
       throw new BadRequestException('postId or commentId is required');
 

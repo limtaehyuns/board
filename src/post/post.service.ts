@@ -104,7 +104,10 @@ export class PostService {
   }
 
   async findAll(pagination: Pagination) {
-    const db = await this.postRepository.where(pagination);
+    const db = this.postRepository.pagination(
+      await this.postRepository.where({}),
+      pagination,
+    );
 
     // const postData = await this.getPosts(db, limit, offset);
     return db;
@@ -127,22 +130,36 @@ export class PostService {
     query?: string,
     slug?: string,
   ) {
-    const targetSlugs = slug ? this.postRepository.searchSlug(slug) : [];
+    const targetSlugs: string[] = slug
+      ? await this.postRepository.searchSlug(slug)
+      : [];
 
-    return this.postRepository.pagination(
-      await this.postRepository.where({
-        boardId: {
-          $in: targetSlugs,
-        },
-        content:
+    console.log(targetSlugs);
+
+    const condition = {
+      boardId: targetSlugs.length
+        ? {
+            $in: targetSlugs,
+          }
+        : undefined,
+      content: {
+        $in:
           type === SearchType.TITLE_AND_CONTENT || SearchType.CONTENT
             ? query
             : undefined,
-        title:
+      },
+      title: {
+        $in:
           type === SearchType.TITLE_AND_CONTENT || SearchType.TITLE
             ? query
             : undefined,
-      }),
+      },
+    };
+
+    console.log(condition);
+
+    return this.postRepository.pagination(
+      await this.postRepository.where(condition),
       pagination,
     );
   }
