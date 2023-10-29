@@ -1,29 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DbModule } from './db/db.module';
-import { BoardModule } from './board/board.module';
-import { PostModule } from './post/post.module';
-import { RateLimiterGuard, RateLimiterModule } from 'nestjs-rate-limiter';
-import { APP_GUARD } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
+import { BoardModule } from './board/board.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver } from '@nestjs/apollo';
 
 @Module({
   imports: [
-    RateLimiterModule,
+    GraphQLModule.forRoot({
+      autoSchemaFile: true,
+      driver: ApolloDriver,
+    }),
     CacheModule.register({ isGlobal: true, store: 'memory' }),
     DbModule,
     BoardModule,
-    BoardModule,
-    PostModule,
-  ],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: RateLimiterGuard,
-    },
   ],
 })
 export class AppModule {}

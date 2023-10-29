@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { DbService } from './db.service';
-import { Pagination, PaginationResult } from 'src/interface/Pagination';
+// import { Pagination, PaginationResult } from 'src/interface/Pagination';
 import { Where } from 'src/interface/Query';
 
 export class Repository<T> extends DbService<T> {
@@ -8,26 +8,13 @@ export class Repository<T> extends DbService<T> {
     super();
   }
 
-  public pagination(items: T[], pagination: Pagination): PaginationResult<T> {
-    const { page, limit } = pagination;
-
-    return {
-      pagination: {
-        limit,
-        page: Math.ceil(items.length / limit),
-        total: items.length,
-      },
-      data: items.slice((page - 1) * limit, page * limit),
-    };
-  }
-
   public async lastId(): Promise<number> {
     const items = await this.readFile(this.entity);
     return items.length ? items[items.length - 1]['id'] : 0;
   }
 
-  public async findAll(pagination: Pagination): Promise<PaginationResult<T>> {
-    return this.pagination(await this.where({}), pagination);
+  public async findAll(): Promise<T[]> {
+    return await this.where({});
   }
 
   public async findOne(where: Where<T>): Promise<T> {
@@ -55,6 +42,18 @@ export class Repository<T> extends DbService<T> {
             case '$like':
               if (!item[key].includes(value)) return false;
               break;
+            case '$gt':
+              if (item[key] <= value) return false;
+              break;
+            case '$gte':
+              if (item[key] < value) return false;
+              break;
+            case '$lt':
+              if (item[key] >= value) return false;
+              break;
+            case '$lte':
+              if (item[key] > value) return false;
+              break;
             default:
               break;
           }
@@ -68,11 +67,11 @@ export class Repository<T> extends DbService<T> {
     return queryResult;
   }
 
-  public async insert(data: T): Promise<T> {
-    this.writeFile(this.entity, [...this.readFile(this.entity), data]);
+  // public async insert(data: T): Promise<T> {
+  //   this.writeFile(this.entity, [...this.readFile(this.entity), data]);
 
-    return this.findOne(data);
-  }
+  //   return this.findOne(data);
+  // }
 
   public async update(data: T, where: Partial<T>): Promise<void> {
     const item = await this.findOne(where);

@@ -1,53 +1,43 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateBoardDto } from './dto/create-board.dto';
-import { UpdateBoardDto } from './dto/update-board.dto';
-import { BoardRepository } from './entities/board.repository';
-import { Pagination } from 'src/interface/Pagination';
-import { FindOneBoardDto } from './dto/findone-board';
+import { Injectable } from '@nestjs/common';
+import { CreateBoardInput } from './dto/create-board.input';
+import { UpdateBoardInput } from './dto/update-board.input';
+import { Repository } from 'src/db/repository';
+import { Board } from './entities/board.entity';
+
+class BoardRepository extends Repository<Board> {
+  constructor() {
+    super('board');
+  }
+}
 
 @Injectable()
 export class BoardService {
-  constructor(private readonly boardRepository: BoardRepository) {}
-
-  async create(createBoardDto: CreateBoardDto) {
-    const insertResult = await this.boardRepository.insert(createBoardDto);
-
-    return insertResult;
+  private readonly boardRepository = new BoardRepository();
+  constructor() {}
+  create(createBoardInput: CreateBoardInput) {
+    return 'This action adds a new board';
   }
 
-  async findAll(pagination: Pagination) {
-    const boards = await this.boardRepository.findAll(pagination);
-
-    return boards;
+  findAll() {
+    return this.boardRepository.findAll();
   }
 
-  async findAllWithoutPagination() {
-    const boards = await this.boardRepository.where({});
-
-    return boards;
+  findOne(id: number) {
+    return `This action returns a #${id} board`;
   }
 
-  async findOne(param: FindOneBoardDto) {
-    const board = await this.boardRepository.findOne(
-      { id: { $eq: param.id } },
-      {
-        load: param.children,
-        pagination: { page: param.page, limit: param.limit },
-      },
-    );
-    if (!board) throw new NotFoundException('resource not found');
-
-    return board;
+  findChildren(parentId: number) {
+    if (!parentId) {
+      return [];
+    }
+    return this.boardRepository.where({ parentId: { $eq: parentId } });
   }
 
-  async update(id: number, updateBoardDto: UpdateBoardDto) {
-    let [board] = await this.boardRepository.where({ id });
-    board = { ...board, ...updateBoardDto };
-
-    return await this.boardRepository.update(board, { id });
+  update(id: number, updateBoardInput: UpdateBoardInput) {
+    return `This action updates a #${id} board`;
   }
 
-  async remove(id: number) {
-    await this.boardRepository.delete({ id });
+  remove(id: number) {
+    return `This action removes a #${id} board`;
   }
 }
