@@ -1,21 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBoardInput } from './dto/create-board.input';
 import { UpdateBoardInput } from './dto/update-board.input';
-import { Repository } from 'src/db/repository';
-import { Board } from './entities/board.entity';
-
-class BoardRepository extends Repository<Board> {
-  constructor() {
-    super('board');
-  }
-}
+import { BoardRepository } from './entities/board.repository';
 
 @Injectable()
 export class BoardService {
-  private readonly boardRepository = new BoardRepository();
-  constructor() {}
+  constructor(private readonly boardRepository: BoardRepository) {}
+
   create(createBoardInput: CreateBoardInput) {
-    return 'This action adds a new board';
+    return this.boardRepository.insert(createBoardInput);
   }
 
   findAll() {
@@ -23,13 +16,10 @@ export class BoardService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} board`;
+    return this.boardRepository.findOne({ id });
   }
 
-  findChildren(parentId: number) {
-    if (!parentId) {
-      return [];
-    }
+  findChildrens(parentId: number) {
     return this.boardRepository.where({ parentId: { $eq: parentId } });
   }
 

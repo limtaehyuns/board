@@ -67,11 +67,11 @@ export class Repository<T> extends DbService<T> {
     return queryResult;
   }
 
-  // public async insert(data: T): Promise<T> {
-  //   this.writeFile(this.entity, [...this.readFile(this.entity), data]);
+  public async insert(data: T): Promise<T> {
+    this.writeFile(this.entity, [...this.readFile(this.entity), data]);
 
-  //   return this.findOne(data);
-  // }
+    return this.findOne(data);
+  }
 
   public async update(data: T, where: Partial<T>): Promise<void> {
     const item = await this.findOne(where);

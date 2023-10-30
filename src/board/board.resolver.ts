@@ -1,49 +1,48 @@
 import {
-  ResolveField,
   Resolver,
   Query,
   Mutation,
   Args,
   Int,
+  ResolveField,
   Parent,
-  ObjectType,
 } from '@nestjs/graphql';
 import { BoardService } from './board.service';
 import { Board } from './entities/board.entity';
-import { BoardDto } from './dto/board.dto';
-import { Paginated } from 'src/common/pagination';
-// import { CreateBoardInput } from './dto/create-board.input';
-// import { UpdateBoardInput } from './dto/update-board.input';
+import { CreateBoardInput } from './dto/create-board.input';
+import { UpdateBoardInput } from './dto/update-board.input';
 
-// @ObjectType()
-// class PaginatedBoard extends Paginated(BoardDto) {
-//   hasNextPage = true;
-//   // edges: IEdgeType<BoardDto>[];
-//   nodes: BoardDto[];
-//   totalCount = 10;
-// }
-
-@Resolver(() => BoardDto)
+@Resolver(() => Board)
 export class BoardResolver {
   constructor(private readonly boardService: BoardService) {}
 
-  @ResolveField(() => [BoardDto], { name: 'boards' })
-  boards(@Parent() board: Board) {
-    return this.boardService.findChildren(board.id);
+  @ResolveField(() => [Board], { nullable: true })
+  boards(@Parent() parent: Board) {
+    const parentId = parent.id;
+
+    return this.boardService.findChildrens(parentId);
   }
 
-  @Query(() => [BoardDto], { name: 'board' })
-  findAll() {
-    return this.boardService.findAll();
+  @Mutation(() => Board)
+  createBoard(@Args('createBoardInput') createBoardInput: CreateBoardInput) {
+    console.log(createBoardInput);
+    return this.boardService.create(createBoardInput);
   }
 
-  // @ResolveField('boards')
-  // async board(@Parent() board: BoardDto) {
-  //   return this.boardService.findAll();ㅌ
-  // }
+  @Query(() => Board, { name: 'board' })
+  findOne(@Args('id', { type: () => Int, nullable: true }) id?: number) {
+    return id !== null
+      ? this.boardService.findOne(id)
+      : this.boardService.findAll();
+  }
 
-  // @ResolveField('boards', () => [BoardDto])
-  // async boards(@Parent() board: BoardDto) {
-  //   return this.boardService.findAll();
-  // }
+  @Mutation(() => Board)
+  updateBoard(@Args('updateBoardInput') updateBoardInput: UpdateBoardInput) {
+    return this.boardService.update(updateBoardInput.id, updateBoardInput);
+  }
+
+  @Mutation(() => Board)
+  removeBoard(@Args('id', { type: () => Int }) id: number) {
+    return this.boardService.remove(id);
+  }
 }
