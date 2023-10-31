@@ -9,8 +9,8 @@
 3. transform을 실행
    1. ValidatePipeOptions에 정한 typedl 있다면 들어온 값의 타입을 변경
    2. 들어온 값에 metaType이 없고 type이 커스텀이거나, [String. boolean, Number, Array, Object, Buffer, Date]에 포함되거나 null, undefined일경우 변환이 활성화 살태라면 값을 원시 타입으로 바꾸거나 아니라면 원래 value를 반환
-   3. originalValue에 value를 할당함s
-   4. value 가 null, undefined인지 확인하고 value에 있는 모든 __proto__를 제거함 
+   3. originalValue에 value를 할당함
+   4. value 가 null, undefined인지 확인하고 value에 있는 모든 [__proto__를 제거](#stripprotokeys)함 [제거 이유](#__proto__를-지우는-이유)
    5. classTransformer로 value를 원하는 타입으로 변경하고 이를 entity 변수에 저장함
    6. originalEntity 변수에 entity를 저장함
    7. entity.constructor가 metatype과 같은지 확인하고 같지 않다면
@@ -25,6 +25,14 @@
    12. validatorOptions의 키의 길이가 1보다 클경우
        1.  맞을경우 entity를 classTransformer를 사용하여 classToPlain으로 변환하고 반환
        2.  아닐경우 value를 반환
+4. transform의 결과를 반환함
+
+---
+## __proto__를 지우는 이유
+> __proto__는 자신의 부모 객체를 가리킴
+1. 보안 문제 
+2. 성능 문제
+3. 호환성 문제: __proto__는 ECMAScript 표준이 아니어서 모든 브라우저에서 지원하지 않음
 
 ---
 ## Funtions
