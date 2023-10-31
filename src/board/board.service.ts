@@ -7,12 +7,12 @@ import { BoardRepository } from './entities/board.repository';
 export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
-  create(createBoardInput: CreateBoardInput) {
-    return this.boardRepository.insert(createBoardInput);
+  async create(createBoardInput: CreateBoardInput) {
+    return await this.boardRepository.insert(createBoardInput);
   }
 
   findAll() {
-    return this.boardRepository.findAll();
+    return this.boardRepository.where({});
   }
 
   findOne(id: number) {
@@ -28,6 +28,6 @@ export class BoardService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} board`;
+    return this.boardRepository.delete({ id });
   }
 }

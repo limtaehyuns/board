@@ -7,6 +7,24 @@
 1. ValidationPipe는 ValidatePipeOptions를 인자로 받아 각 내부 변수에 할당함
 2. classValidator와 classTransformer에 대한 Package를 직접 지정하지 않은 경우 기본 값인 class-validator와 class-transformer를 불러와 패키지가 깔려있는지 확인함
 3. transform을 실행
+   1. ValidatePipeOptions에 정한 typedl 있다면 들어온 값의 타입을 변경
+   2. 들어온 값에 metaType이 없고 type이 커스텀이거나, [String. boolean, Number, Array, Object, Buffer, Date]에 포함되거나 null, undefined일경우 변환이 활성화 살태라면 값을 원시 타입으로 바꾸거나 아니라면 원래 value를 반환
+   3. originalValue에 value를 할당함s
+   4. value 가 null, undefined인지 확인하고 value에 있는 모든 __proto__를 제거함 
+   5. classTransformer로 value를 원하는 타입으로 변경하고 이를 entity 변수에 저장함
+   6. originalEntity 변수에 entity를 저장함
+   7. entity.constructor가 metatype과 같은지 확인하고 같지 않다면
+      1. 이와 동시에 value값이 원시값이 아닐경우 entity.constructor를 metatype으로 변경함
+      2. entity를 { constructor: metatype } 형태로 변경함
+   8. this.[validate](#validate)를 사용하여 entity를 검증함
+      1. 검증된 오류가 있다면 [createExceptionFactory](#createexceptionfactory)를 사용하여 오류를 생성함
+      2. 오류를 반환함
+   9. value가 원시 값일경우 entity를 originalEntity로 변경함
+   10. transfrom이 활성화 되있을경우 entity를 반환함
+   11. value가 undefined, null일경우 originalValue를 반환함
+   12. validatorOptions의 키의 길이가 1보다 클경우
+       1.  맞을경우 entity를 classTransformer를 사용하여 classToPlain으로 변환하고 반환
+       2.  아닐경우 value를 반환
 
 ---
 ## Funtions
@@ -194,3 +212,33 @@ protected prependConstraintsWithParentProp(
 1. parentPath와 error를 받음
 2. error.constraints의 key값을 순회하며 parentPath를 붙임
 3. 결과 값을 반환함
+
+### stripProtoKeys
+```js
+protected stripProtoKeys(value: any) {
+  if (
+    value == null ||
+    typeof value !== 'object' ||
+    types.isTypedArray(value)
+  ) {
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const v of value) {
+      this.stripProtoKeys(v);
+    }
+    return;
+  }
+  delete value.__proto__;
+  for (const key in value) {
+    this.stripProtoKeys(value[key]);
+  }
+}
+```
+> value의 __proto__를 제거함
+1. value를 받음
+2. value가 null이거나 undefined이거나 object가 아닌 경우 함수를 종료함
+3. value가 배열인 경우 배열의 모든 요소에 stripProtoKeys를 호출함
+4. value의 __proto__를 제거함
+5. value의 모든 key에 stripProtoKeys를 호출함
+6. 함수를 종료

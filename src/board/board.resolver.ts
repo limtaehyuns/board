@@ -28,10 +28,10 @@ export class BoardResolver {
     console.log(createBoardInput);
     return this.boardService.create(createBoardInput);
   }
-
   @Query(() => Board, { name: 'board' })
   findOne(@Args('id', { type: () => Int, nullable: true }) id?: number) {
-    return id !== null
+    console.log(typeof id);
+    return id !== undefined
       ? this.boardService.findOne(id)
       : this.boardService.findAll();
   }
