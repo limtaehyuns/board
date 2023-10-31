@@ -71,16 +71,16 @@ protected toEmptyIfNil<T = any, R = any>(value: T): R | {} {
 ### flattenValidationErrors
 ```js
 protected flattenValidationErrors(
-    validationErrors: ValidationError[],
-  ): string[] {
-    return iterate(validationErrors)
-      .map(error => this.mapChildrenToValidationErrors(error))
-      .flatten()
-      .filter(item => !!item.constraints)
-      .map(item => Object.values(item.constraints))
-      .flatten()
-      .toArray();
-  }
+  validationErrors: ValidationError[],
+): string[] {
+  return iterate(validationErrors)
+    .map(error => this.mapChildrenToValidationErrors(error))
+    .flatten()
+    .filter(item => !!item.constraints)
+    .map(item => Object.values(item.constraints))
+    .flatten()
+    .toArray();
+}
 ```
 > classValidator가 반환한 오류를 평탄화 하여 string[]으로 반환함
 1. classValidator에서 반환한 에러중 children이 있는경우 평탄화를 진행하여 children 들을 부모와 합침 [mapChildrenToValidationErrors](#mapchildrentovalidationerrors)
