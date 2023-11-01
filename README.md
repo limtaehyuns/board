@@ -7,7 +7,7 @@
 1. ValidationPipe는 ValidatePipeOptions를 인자로 받아 각 내부 변수에 할당함
 2. classValidator와 classTransformer에 대한 Package를 직접 지정하지 않은 경우 기본 값인 class-validator와 class-transformer를 불러와 패키지가 깔려있는지 확인함
 3. transform을 실행
-   1. ValidatePipeOptions에 정한 typedl 있다면 들어온 값의 타입을 변경
+   1. ValidatePipeOptions에 정한 type이 있다면 들어온 값의 타입을 변경
    2. 들어온 값에 metaType이 없고 type이 커스텀이거나, [String. boolean, Number, Array, Object, Buffer, Date]에 포함되거나 null, undefined일경우 변환이 활성화 살태라면 값을 원시 타입으로 바꾸거나 아니라면 원래 value를 반환
    3. originalValue에 value를 할당함
    4. value 가 null, undefined인지 확인하고 value에 있는 모든 [__proto__를 제거](#stripprotokeys)함 [제거 이유](#__proto__를-지우는-이유)
